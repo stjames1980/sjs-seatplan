@@ -134,7 +134,7 @@ table.p tr.grp td{border-top:2px solid var(--dark)}
 .pchart{border-collapse:separate;border-spacing:3px;margin:0 auto;width:100%;table-layout:fixed}
 .pchart tr>:first-child{width:8mm}
 .pchart td.seat{border:1px solid #a1adc2;text-align:center;font-weight:800;font-size:var(--fs,15px);height:var(--rh,30px);border-radius:4px;overflow:hidden;white-space:nowrap}
-.pchart th{font-size:11px;color:#fff;padding:3px 1px;border-radius:3px;overflow:hidden;white-space:nowrap}
+.pchart th{font-size:var(--hfs,11px);color:#fff;padding:3px 1px;border-radius:3px;overflow:hidden;white-space:nowrap}
 .pchart td.sA{background:var(--sA)}.pchart td.sB{background:var(--sB)}.pchart td.sC{background:var(--sC)}
 .pchart td.vac{background:#f3f3f3;color:#aaa}.pchart td.spc{background:#ece6f8;color:var(--purple)}
 .pchart th.rowh{background:var(--pri)}.pchart td.sno{font-size:13px;font-weight:700;color:#666;text-align:center}
@@ -1016,12 +1016,12 @@ const grpTag=s=>s.group?` <small>(${esc(s.group[0])})</small>`:"";
 function renderReport(id){
   const P=PLAN; const R={
   roomchart(){ const p=repPlan(); if(!p) return empty("No rooms in use."); const di=repPlanDay();
-    return selRooms(p).map(room=>page(pHead(`SEATING PLAN — ROOM ${room.no}${room.loc?" ("+room.loc+")":""}`,`${examLine()}${planInfo(p)}${di!==null?" &nbsp;•&nbsp; "+dayLabel(di):""} &nbsp;•&nbsp; ${room.seated} students`)+
-      `<div style="text-align:center;font-weight:800;font-size:11px;color:var(--pri);margin:4px 0">▲ FRONT — BLACKBOARD / INVIGILATOR'S DESK ▲</div><div class="pchart-wrap">${chartTable(room,di,false).replace("<table>",`<table class="pchart" style="--rh:${Math.max(6,Math.min(13,Math.floor((80-Math.max(0,room.segments.length-2)*6.5)/room.D)))}mm;--fs:${Math.round(Math.max(11,Math.min(20,Math.floor((80-Math.max(0,room.segments.length-2)*6.5)/room.D)*1.5,300/room.R)))}px">`)}</div>
-      <table class="p" style="margin-top:8px;width:auto;min-width:60%;margin-left:auto;margin-right:auto"><tr><th>Class</th><th>Roll No. from</th><th>to</th><th>Students</th>${di!==null?"<th>Subject</th>":""}</tr>
-      ${room.segments.map(g=>`<tr><td class="c"><b>${esc(g.cls)}${g.special?" ★":""}</b></td><td class="c">${g.from}</td><td class="c">${g.to}</td><td class="c">${g.count}</td>${di!==null?`<td class="c">${esc(P.subjectOf(di,g.cls)||"—")}</td>`:""}</tr>`).join("")}</table>
+    return selRooms(p).map(room=>{ const _b=80-Math.max(0,room.segments.length-1)*6.5, _ml=Math.max(5,...room.seats.filter(x=>x.cls).map(x=>(x.cls+"-"+x.roll).length+(x.special?2:0))); return page(pHead(`SEATING PLAN — ROOM ${room.no}${room.loc?" ("+room.loc+")":""}  |  Total No. = ${room.seated}`,`${examLine()}${planInfo(p)}${di!==null?" &nbsp;•&nbsp; "+dayLabel(di):""} &nbsp;•&nbsp; ${room.seated} students`)+
+      `<div style="text-align:center;font-weight:800;font-size:11px;color:var(--pri);margin:4px 0">▲ FRONT — BLACKBOARD / INVIGILATOR'S DESK ▲</div><div class="pchart-wrap">${chartTable(room,di,false).replace("<table>",`<table class="pchart" style="--rh:${Math.max(5,Math.min(13,Math.floor(_b/room.D)))}mm;--fs:${Math.round(Math.max(6,Math.min(20,Math.floor(_b/room.D)*1.5,(1040/room.R-6)/(0.62*_ml))))}px;--hfs:${Math.max(5,Math.min(11,Math.floor((1040/room.R-4)/6.2)))}px">`)}</div>
+      <table class="p" style="margin-top:8px;width:auto;min-width:60%;margin-left:auto;margin-right:auto"><tr><th>Class</th><th>Roll No. from</th><th>to</th>${di!==null?"<th>Subject</th>":""}<th>Total No.</th></tr>
+      ${room.segments.map(g=>`<tr><td class="c"><b>${esc(g.cls)}${g.special?" ★":""}</b></td><td class="c">${g.from}</td><td class="c">${g.to}</td>${di!==null?`<td class="c">${esc(P.subjectOf(di,g.cls)||"—")}</td>`:""}<td class="c">${g.count}</td></tr>`).join("")}<tr><td class="c" colspan="${di!==null?4:3}" style="text-align:right;font-weight:800;background:var(--soft)">Total No.</td><td class="c" style="font-weight:800;background:var(--soft)">${room.seated}</td></tr></table>
       <div style="font-size:9.5px;color:var(--muted);text-align:center;margin-top:4px">ROW = seat position on the bench line, counted from the left as you face the students • 1, 2, 3… = bench from the front • ★ special seat</div>
-      ${signs("Invigilator","Exam In-charge")}`,true)).join("") || empty("No rooms in use."); },
+      ${signs("Exam In-charge","Principal")}`,true); }).join("") || empty("No rooms in use."); },
   attendance(){ const out=[];
     selDays().forEach(di=>{ const p=P.planFor(di); if(!p) return; selRooms(p).forEach(room=>{ const list=roomSeatsOrdered(room).filter(s=>P.paperOf(di,s.stu)!==null); if(!list.length) return;
       const sl=(P.inv.days[di]||{}).rooms?.[room.no]; const inv=sl?sl.t.slice(0,sl.need).map(t=>t===null?"":P.inv.teachers[t].name).filter(Boolean).join(", "):"";
