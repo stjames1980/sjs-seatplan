@@ -150,7 +150,7 @@ table.p tr.grp td{border-top:2px solid var(--dark)}
 .lab .r{font-size:30px;font-weight:900;color:var(--dark);line-height:1.1;margin-top:1mm}
 .lab .n{font-size:10.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lab .e{font-size:9.5px;font-weight:800;color:var(--pri);margin-top:auto}
-.labfront{text-align:center;font-size:10px;font-weight:800;color:#fff;background:var(--dark);margin:1mm 0;padding:1px;border-radius:2px}table.labroom{border-collapse:collapse;table-layout:fixed;width:100%}table.labroom td{padding:0}table.labroom td.bh{font-size:8.5px;font-weight:800;text-align:center;color:var(--dark);height:4mm;border-bottom:1px solid var(--dark)}table.labroom td.sn{font-size:9px;font-weight:800;color:var(--muted);text-align:center}table.labroom td.gap{background:repeating-linear-gradient(0deg,#d9dee8 0 2px,transparent 2px 5px)}table.labroom td.lb{border:1px dashed #6f7d96;height:var(--lh);text-align:center;vertical-align:top;overflow:hidden;padding:.8mm}table.labroom td.lb>div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}table.labroom .h{background:var(--pri);color:#fff;font-size:7.5px;font-weight:700;padding:1px 2px;border-radius:2px}table.labroom .r{font-size:var(--rf);font-weight:900;color:var(--dark);line-height:1.15;margin-top:.8mm}table.labroom .n{font-size:var(--nf);font-weight:700}table.labroom .e{font-size:var(--ef);font-weight:800;color:var(--pri);margin-top:.5mm}table.labroom td.vac{background:#f6f7fa;color:#aab;vertical-align:middle}table.labroom td.none{border:none}
+.labfront{text-align:center;font-size:10px;font-weight:800;color:#fff;background:var(--dark);margin:1mm 0;padding:1px;border-radius:2px}table.labroom{border-collapse:collapse;table-layout:fixed;width:100%}table.labroom td{padding:0}table.labroom td.bh{font-size:8.5px;font-weight:800;text-align:center;color:var(--dark);height:4mm;border-bottom:1px solid var(--dark)}table.labroom td.sn{font-size:9px;font-weight:800;color:var(--muted);text-align:center}table.labroom td.gap{background:repeating-linear-gradient(0deg,#d9dee8 0 2px,transparent 2px 5px)}table.labroom td.lb{border:1px dashed #6f7d96;height:var(--lh);text-align:center;vertical-align:top;overflow:hidden;padding:.8mm}table.labroom td.lb>div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}table.labroom .h{background:var(--pri);color:#fff;font-size:7.5px;font-weight:700;padding:1px 2px;border-radius:2px}table.labroom .r{font-size:var(--rf);font-weight:900;color:var(--dark);line-height:1.15;margin-top:.8mm}table.labroom .n{font-size:var(--nf);font-weight:700}table.labroom .e{font-size:var(--ef);font-weight:800;color:var(--pri);margin-top:.5mm}table.labroom.big td.lb{padding:1mm}table.labroom.big .h{font-size:8.5px;padding:1.5px 2px}table.labroom.big .r{margin-top:1mm;line-height:1.1}.labmap{display:flex;justify-content:center;gap:4px;margin:0 0 1mm}.labmap span{font-size:9px;font-weight:700;border:1px solid #c3ccdb;border-radius:3px;padding:0 6px;color:#8a94a6}.labmap span.on{background:var(--pri);color:#fff;border-color:var(--pri)}table.labroom td.vac{background:#f6f7fa;color:#aab;vertical-align:middle}table.labroom td.none{border:none}
 .slips{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border-left:1px dashed #6f7d96;border-top:1px dashed #6f7d96}
 .slip{border-right:1px dashed #6f7d96;border-bottom:1px dashed #6f7d96;height:56mm;padding:1.5mm;overflow:hidden}
 .slip .h{background:var(--pri);color:#fff;font-weight:800;font-size:13px;text-align:center;padding:3px}
@@ -1078,6 +1078,7 @@ const REPORTS=[
   ["classwise","🏫 Class-wise notice","For each class: room and roll numbers",{plan:1}],
   ["seatlist","📋 Seat list by class","Every student: roll, name, room, ROW, bench",{plan:1,cls:1}],
   ["labels","🏷 Desk labels","Stick on benches — 4 × 10 per A4, room-wise",{plan:1,room:1}],
+  ["labbig","🏷 Desk labels — room chart, BIG (4 across)","Big labels in room-chart order: the room is printed in parts of up to 4 rows side by side (e.g. ROW-1 to 3, then ROW-4 to 6), front at top",{plan:1,room:1}],
   ["labroom","🏷 Desk labels — like room chart","Labels placed exactly as the seats in the room (front at top) — cut row by row and stick in order",{plan:1,room:1}],
   ["slips","🎫 Seat slips","Hand to students: room & seat — 10 per sheet",{cls:1}],
   ["invig","🗓 Invigilation duty chart","Rooms × exam days / sessions — all days or one day",{duty:1}],
@@ -1260,6 +1261,36 @@ function renderReport(id){
     selRooms(p).forEach(room=>{ const L=room.seats.filter(s=>s.cls).sort((a,b)=>a.d-b.d||a.c-b.c); const sheets=Math.ceil(L.length/per);
       for(let i=0;i<L.length;i+=per){ const k=i/per+1;
         out.push(page(`<div class="labhead"><span>ROOM ${esc(room.no)}${room.loc?" — "+esc(room.loc):""}</span><span>Desk labels${tag} • ${L.length} students • sheet ${k} of ${sheets}</span></div><div class="labels">${L.slice(i,i+per).map(s=>`<div class="lab"><div class="h">${esc(S.setup.exam)}</div><div class="r">${esc(s.cls)}-${s.roll}</div><div class="n">${esc(s.name)}</div><div class="e">ROOM ${esc(room.no)} • ROW-${s.c+1} • BENCH ${s.d+1}${s.special?" ★":""}</div></div>`).join("")}</div>`,false,true)); } });
+    return out.join("")||empty("No seated students."); },
+  labbig(){ const p=repPlan(); if(!p) return empty("No rooms."); const di=repPlanDay(); const out=[];
+    const tag=di!==null?" • "+esc(fmtDate(S.days[di].date,{day:"2-digit",month:"short"})):(P.two?" • "+esc(p.label.split(" ")[0]):"");
+    selRooms(p).forEach(room=>{ const n=room.seats.filter(s=>s.cls).length; if(!n) return;
+      const R=room.R, D=room.D;
+      // bench groups (columns that sit together), packed into parts of at most 4 columns
+      const groups=[]; for(let c=0;c<R;c++){ if(!c||room.benchOf[c]!==room.benchOf[c-1]) groups.push([]); groups[groups.length-1].push(c); }
+      const pieces=[]; groups.forEach(g=>{ for(let i=0;i<g.length;i+=4) pieces.push(g.slice(i,i+4)); });
+      const parts=[]; pieces.forEach(g=>{ const last=parts[parts.length-1]; if(last&&last.flat().length+g.length<=4) last.push(g); else parts.push([g]); });
+      const per=Math.min(D,10), h=Math.min(27,256/per);
+      const totalPages=parts.length*Math.ceil(D/per); let pg=0;
+      parts.forEach((part,pi)=>{ const cols=part.flat(); const w=Math.min(58,(186-(part.length-1)*4)/cols.length), rf=w>=52?34:30;
+        for(let d0=0;d0<D;d0+=per){ const d1=Math.min(D,d0+per); pg++;
+          let t=`<table class="labroom big" style="--lh:${h.toFixed(1)}mm;--rf:${rf}px;--nf:10.5px;--ef:9.5px;width:auto;margin:0 auto"><colgroup><col style="width:6mm">`;
+          part.forEach((g,gi)=>{ if(gi) t+=`<col style="width:4mm">`; g.forEach(()=>t+=`<col style="width:${w.toFixed(1)}mm">`); });
+          t+=`</colgroup><tr><td class="bh" style="font-size:7px">BENCH</td>`;
+          part.forEach((g,gi)=>{ if(gi) t+=`<td class="gap"></td>`; g.forEach(c=>t+=`<td class="bh" style="font-size:11px">ROW-${c+1}</td>`); });
+          t+=`</tr>`;
+          for(let d=d0;d<d1;d++){ t+=`<tr><td class="sn" style="font-size:12px">${d+1}</td>`;
+            part.forEach((g,gi)=>{ if(gi) t+=`<td class="gap"></td>`; g.forEach(c=>{ const x=room.grid[c][d];
+              if(x.none){ t+=`<td class="none"></td>`; return; }
+              if(!x.cls){ t+=`<td class="lb vac"><div class="e">vacant</div></td>`; return; }
+              t+=`<td class="lb"><div class="h">${esc(S.setup.exam)}</div><div class="r">${esc(x.cls)}-${x.roll}${x.special?" ★":""}</div><div class="n">${esc(x.name)}</div><div class="e">ROOM ${esc(room.no)} • ROW-${c+1} / ${d+1}</div></td>`; }); });
+            t+=`</tr>`; }
+          t+=`</table>`;
+          const side=parts.length>1?(pi===0?" (left side)":pi===parts.length-1?" (right side)":" (middle)"):"";
+          const map=parts.length>1?`<div class="labmap">${parts.map((pp,k)=>`<span class="${k===pi?"on":""}">ROW-${pp.flat()[0]+1}–${pp.flat().slice(-1)[0]+1}</span>`).join("")}</div>`:"";
+          out.push(page(`<div class="labhead"><span>ROOM ${esc(room.no)}${room.loc?" — "+esc(room.loc):""} • ROW-${cols[0]+1} to ROW-${cols[cols.length-1]+1}${side}</span><span>Desk labels${tag} • sheet ${pg} of ${totalPages}${D>per?` • bench ${d0+1}–${d1}`:""}</span></div>
+            <div class="labfront">▲ FRONT — BLACKBOARD / INVIGILATOR'S DESK ▲</div>${map}${t}`,false,true)); } });
+    });
     return out.join("")||empty("No seated students."); },
   labroom(){ const p=repPlan(); if(!p) return empty("No rooms."); const di=repPlanDay(); const out=[];
     const tag=di!==null?" • "+esc(fmtDate(S.days[di].date,{day:"2-digit",month:"short"})):(P.two?" • "+esc(p.label.split(" ")[0]):"");
@@ -1673,7 +1704,7 @@ function invFixList(ds,roomNos){
   }));
   if(!items.length&&!empt.length) return "";
   const em=empt.length>4?`<li><details><summary><span class="pill bad">empty</span> <b>${empt.length} duties have no invigilator</b> — not enough teachers free on those days (add teachers or check "not available"). Show them ▾</summary><ul>${empt.join("")}</ul></details></li>`:empt.join("");
-  return `<div class="card fixcard"><h3 style="margin:0 0 6px">⚠ ${items.length+empt.length} to fix <small class="hint" style="font-weight:400">— press a button, then pick a free teacher (fewest duties first) or ⇄ swap with another room</small></h3><ul>${items.join("")}${em}</ul></div>`;
+  return `<div class="card fixcard"><h3 style="margin:0 0 6px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">⚠ ${items.length+empt.length} to fix <button class="btn gold sm" data-act="autoFix" title="Changes only the problem duties — every other duty stays as it is">⚡ Fix automatically</button><small class="hint" style="font-weight:400">or press a button below and pick a <span class="pill ok">✔ safe</span> teacher yourself</small></h3><ul>${items.join("")}${em}</ul></div>`;
 }
 function invTeacherCheck(ds){
   const P=PLAN, inv=P.inv, two=P.two;
@@ -1705,7 +1736,7 @@ function help(){
     ${step(4,"Classes / Students","Tick the sections writing this exam; mark students who are not writing.","classes")}
     ${step(5,"Print","Room charts, attendance, labels, slips, duty chart, packets.","print")}</ol></div>
     <div class="card"><h3>Overrides — only when needed</h3><ul style="padding-left:18px;line-height:1.6"><li><b>Special Seats</b> — fix one student's seat (or click a seat on Seat Plan).</li><li><b>Rooms → Fix A / B / C</b> — choose the classes of a room yourself.</li><li><b>Duty Changes</b> — replace an invigilator for a day.</li><li><b>Absentees</b> — day-wise absent students.</li><li><b>Classes → MANUAL mode</b> (School & Exam) — choose which classes share rooms everywhere.</li></ul></div>
-    <div class="card"><h3>New in v2.2</h3><ul style="padding-left:18px;line-height:1.6"><li><b>🏷 Desk labels — like room chart</b> (v2.2.5) — labels printed in the same places as the seats, front at top; cut row by row.</li><li><b>Invigilation</b> (v2.2.5) — same-room / same-pair repeats coloured with a ⚠ To fix list, and a check that every available teacher has duty.</li><li><b>🔢 Roll range — one room per page</b> (v2.2.5) — the same absent-roll sheet, each room on its own large-print landscape page with subjects and invigilators.</li><li><b>🔢 Roll-call by roll range</b> (v2.2.5) — each room's classes as Roll No. from–to; invigilators write only absent roll numbers per day. All rooms, all days on 1–2 pages.</li><li><b>✔ Roll-call register</b> (v2.2.5, Print Centre) — every exam day of a room on one sheet: P / A boxes per day, totals and invigilator signature. 1–2 pages per room instead of one page per room per day.</li><li><b>🔒 Lock plan</b> (Seat Plan page) after printing — seats and duties stay as printed; late students go into free seats.</li><li><b>Plan code</b> on every print-out and on the Dashboard — if the codes differ, the print-out is old.</li><li><b>✅ Totals check</b> in Print Centre — every count worked out two ways.</li><li><b>Click a name</b> on the Invigilation chart to change or swap teachers.</li><li><b>Ground floor only</b> teachers and room <b>Floor</b>.</li><li>Absentees and duty changes are tied to the <b>date</b>, so editing the date sheet never moves them.</li><li><b>Earlier versions</b> saved automatically (Data page).</li><li><b>🔀 New seat arrangement</b> on the Seat Plan page.</li><li><b>One day only</b> (v2.2.1): Invigilation chart, Duty roster and Duty slips have an <b>Exam day</b> choice in Print Centre.</li></ul></div>
+    <div class="card"><h3>New in v2.2</h3><ul style="padding-left:18px;line-height:1.6"><li><b>🏷 Desk labels — room chart, BIG</b> (v2.2.5) — big labels, up to 4 rows across, printed in room-chart order part by part (left side, right side).</li><li><b>⚡ Fix automatically</b> (v2.2.5, Invigilation) — fixes repeats with safe changes; the change box shows ✔ safe choices and each room's size (1 or 2 invigilators).</li><li><b>🏷 Desk labels — like room chart</b> (v2.2.5) — labels printed in the same places as the seats, front at top; cut row by row.</li><li><b>Invigilation</b> (v2.2.5) — same-room / same-pair repeats coloured with a ⚠ To fix list, and a check that every available teacher has duty.</li><li><b>🔢 Roll range — one room per page</b> (v2.2.5) — the same absent-roll sheet, each room on its own large-print landscape page with subjects and invigilators.</li><li><b>🔢 Roll-call by roll range</b> (v2.2.5) — each room's classes as Roll No. from–to; invigilators write only absent roll numbers per day. All rooms, all days on 1–2 pages.</li><li><b>✔ Roll-call register</b> (v2.2.5, Print Centre) — every exam day of a room on one sheet: P / A boxes per day, totals and invigilator signature. 1–2 pages per room instead of one page per room per day.</li><li><b>🔒 Lock plan</b> (Seat Plan page) after printing — seats and duties stay as printed; late students go into free seats.</li><li><b>Plan code</b> on every print-out and on the Dashboard — if the codes differ, the print-out is old.</li><li><b>✅ Totals check</b> in Print Centre — every count worked out two ways.</li><li><b>Click a name</b> on the Invigilation chart to change or swap teachers.</li><li><b>Ground floor only</b> teachers and room <b>Floor</b>.</li><li>Absentees and duty changes are tied to the <b>date</b>, so editing the date sheet never moves them.</li><li><b>Earlier versions</b> saved automatically (Data page).</li><li><b>🔀 New seat arrangement</b> on the Seat Plan page.</li><li><b>One day only</b> (v2.2.1): Invigilation chart, Duty roster and Duty slips have an <b>Exam day</b> choice in Print Centre.</li></ul></div>
     <div class="card"><h3>New in v2</h3><ul style="padding-left:18px;line-height:1.6"><li><b>Two sessions</b> (School & Exam): classes and teachers are Morning or Noon; a teacher never gets both sessions on one day.</li><li><b>Science / Arts</b> (School & Exam): date sheet columns per group; each XI–XII student gets a Group.</li><li><b>Fresh seat plan every exam day</b>: only students writing that day are seated — fewer rooms and invigilators.</li><li><b>Exams of the year</b>: every exam kept and re-printable.</li><li><b>Share (WhatsApp)</b>: duty chart, each teacher's duties, class seat list.</li><li><b>⬇ Excel</b> on every report, plus one workbook with all reports.</li></ul></div>
     <div class="card"><h3>Good to know</h3><ul style="padding-left:18px;line-height:1.6"><li>Everything is saved automatically in this browser on this computer.</li><li><b>↶ Undo</b> (top right, or Ctrl+Z) takes back the last changes, including an upload.</li><li>Teachers: type day numbers in <b>Not available on days</b> (e.g. 2, 5) — no duty on those days.</li><li>Use <b>Save backup</b> often and keep the .json file on a pen drive / Google Drive. <b>Restore backup</b> brings it back on any computer.</li><li>Open the app in <b>Google Chrome</b> or <b>Microsoft Edge</b>. No internet needed.</li><li>New session: Data → New Session keeps rooms and teachers and lets you load the new student list.</li></ul></div></div>`;
 }
@@ -2081,28 +2112,74 @@ function setDutyChange(di,room,pos,teacher,reason){
   const ex=S.changes.find(c=>c.sit===sit&&T(c.room)===room&&(T(c.pos)||"INVI 1")===p);
   if(ex){ ex.teacher=teacher; ex.reason=ex.reason||reason; } else S.changes.push({sit,day:di+1,room,pos:p,teacher,reason});
 }
-function dutyDialog(key){
-  const [diS,room,posS]=key.split("|"); const di=Number(diS), pos=Number(posS); const inv=PLAN.inv, D=inv.days[di], sl=D.rooms[room]; const cur=sl.t[pos];
-  const two=PLAN.two;
-  // where is every teacher on this sitting / date?
+function dutyOptions(di,room,pos){
+  const inv=PLAN.inv, D=inv.days[di], sl=D.rooms[room]; const cur=sl.t[pos]; const two=PLAN.two;
   const here={}, sameDate={};
   inv.days.forEach(X=>{ if(X.date!==D.date) return; Object.entries(X.rooms).forEach(([no,s2])=>{ for(let p=0;p<s2.need;p++){ const t=s2.t[p]; if(t===null) continue; if(X.di===di) here[t]={room:no,pos:p}; else sameDate[t]=X.sess; } }); });
-  const rows=inv.teachers.filter(t=>t.name).map(t=>{ let st="free", why="";
+  const inRoomElse=(x,no)=>x!==null&&inv.days.some(X=>X.date&&X.di!==di&&X.rooms[no]&&X.rooms[no].t.slice(0,X.rooms[no].need).includes(x));
+  const pairElse=(a,b)=>a!==null&&b!==null&&a!==undefined&&b!==undefined&&inv.days.some(X=>X.date&&X.di!==di&&Object.values(X.rooms).some(s2=>s2.need>1&&((s2.t[0]===a&&s2.t[1]===b)||(s2.t[0]===b&&s2.t[1]===a))));
+  const nm=i=>inv.teachers[i].name;
+  const probsFor=(t,o)=>{ const pr=[];
+    if(inRoomElse(t,room)) pr.push("same room again");
+    if(sl.need>1){ const partner=(o&&o.room===room)?cur:sl.t[1-pos]; if(pairElse(t,partner)) pr.push("pair with "+nm(partner)+" again"); }
+    if(o&&cur!==null&&o.room!==room){ const s2=D.rooms[o.room];
+      if(inRoomElse(cur,o.room)) pr.push(nm(cur)+": same room again in "+o.room);
+      if(s2.need>1){ const pt=s2.t[1-o.pos]; if(pairElse(cur,pt)) pr.push(nm(cur)+" + "+nm(pt)+" pair again"); } }
+    return pr; };
+  const rows=inv.teachers.filter(t=>t.name).map(t=>{ let st="free", why="", o=null, need=0;
     if(!t.avail){ st="no"; why="not available"; }
     else if(t.off.has(di+1)){ st="no"; why="off this day"; }
     else if(two&&t.sess&&t.sess!==D.sess){ st="no"; why=SESS_NAME[t.sess]+" teacher"; }
     else if(t.ground&&sl.upper){ st="no"; why="ground floor only"; }
     else if(sameDate[t.i]){ st="no"; why="has duty in the "+SESS_NAME[sameDate[t.i]]+" session"; }
-    else if(here[t.i]&&t.i!==cur){ st="swap"; why="Room "+here[t.i].room; }
+    else if(here[t.i]&&t.i!==cur){ o=here[t.i]; need=D.rooms[o.room].need;
+      if(o.room===room){ st="no"; why="partner in this room"; }
+      else if(cur!==null&&inv.teachers[cur].ground&&D.rooms[o.room].upper){ st="no"; why="Room "+o.room+" is upstairs ("+nm(cur)+" ground floor only)"; }
+      else { st="swap"; why="Room "+o.room+" · "+(need>1?"2 invi":"1 invi"); } }
     if(t.i===cur){ st="cur"; why="now here"; }
-    return {t,st,why,load:inv.load[t.i]||0}; });
-  const ord={cur:0,free:1,swap:2,no:3}; rows.sort((a,b)=>ord[a.st]-ord[b.st]||a.load-b.load||a.t.name.localeCompare(b.t.name));
+    const probs=(st==="free"||st==="swap")?probsFor(t.i,o):[];
+    const same=st==="swap"&&need===sl.need;
+    const rank=st==="cur"?0:st==="free"&&!probs.length?1:st==="swap"&&!probs.length&&same?2:st==="swap"&&!probs.length?3:st==="free"?4:st==="swap"?5:6;
+    return {t,st,why,o,need,same,probs,rank,load:inv.load[t.i]||0}; });
+  rows.sort((a,b)=>a.rank-b.rank||a.load-b.load||a.t.name.localeCompare(b.t.name));
+  return {D,sl,cur,here,rows};
+}
+function dutyDialog(key){
+  const [diS,room,posS]=key.split("|"); const di=Number(diS), pos=Number(posS); const inv=PLAN.inv;
+  const {sl,cur,here,rows}=dutyOptions(di,room,pos);
+  const partner=sl.need>1?sl.t[1-pos]:null;
   const changed=sl.changed[pos];
+  const badge=r=>r.st==="free"||r.st==="swap"?(r.probs.length?`<span class="pill" style="background:#ffe1c4;color:#9a4b00">⚠ ${esc(r.probs.join("; "))}</span>`:`<span class="pill ok">✔ safe</span>`):"";
   openModal(`<h3>Room ${esc(room)} · ${esc(PLAN.sitLabel(di,true))} · INVI ${pos+1}</h3>
-   <p class="hint">Now: <b>${cur===null?"nobody":esc(inv.teachers[cur].name)}</b>. Pick a free teacher, or one in another room to <b>swap</b> the two.</p>
-   <div style="max-height:52vh;overflow:auto"><table class="t">${rows.map(r=>`<tr${r.st==="no"?' style="opacity:.5"':""}><td><b>${esc(r.t.name)}</b>${r.t.ground?' <small class="pill mut">ground</small>':""}</td><td>${r.load?`<small>${r.load} duties</small>`:`<small class="pill ok">no duty yet</small>`}</td><td><small>${esc(r.why)}</small></td><td style="text-align:right">${r.st==="free"?`<button class="btn sm pri" data-act="dutyPick" data-k="${r.t.i}">Choose</button>`:r.st==="swap"?`<button class="btn sm gold" data-act="dutyPick" data-k="${r.t.i}">⇄ Swap</button>`:""}</td></tr>`).join("")}</table></div>
+   <p class="hint">This room has <b>${sl.need>1?"2 invigilators":"1 invigilator"}</b>${partner!==null?` (with <b>${esc(inv.teachers[partner].name)}</b>)`:""}. Now: <b>${cur===null?"nobody":esc(inv.teachers[cur].name)}</b>.<br>
+   <span class="pill ok">✔ safe</span> = no new repeat. ⇄ Swap rows show the other room's size — <b>${sl.need>1?"2 ⇄ 2":"1 ⇄ 1"}</b> swaps are listed first.</p>
+   <div style="max-height:52vh;overflow:auto"><table class="t">${rows.map(r=>`<tr${r.st==="no"?' style="opacity:.5"':""}><td><b>${esc(r.t.name)}</b>${r.t.ground?' <small class="pill mut">ground</small>':""}</td><td>${r.load?`<small>${r.load} duties</small>`:`<small class="pill ok">no duty yet</small>`}</td><td style="white-space:nowrap"><small>${r.st==="swap"?`<b style="color:${r.same?"var(--dark)":"#9a4b00"}">${esc(r.why)}</b>`:esc(r.why)}</small></td><td>${badge(r)}</td><td style="text-align:right">${r.st==="free"?`<button class="btn sm pri" data-act="dutyPick" data-k="${r.t.i}">Choose</button>`:r.st==="swap"?`<button class="btn sm gold" data-act="dutyPick" data-k="${r.t.i}">⇄ Swap</button>`:""}</td></tr>`).join("")}</table></div>
    <div class="row" style="margin-top:12px;justify-content:space-between">${changed?`<button class="btn" data-act="dutyAuto">↺ Back to automatic</button>`:"<span></span>"}<button class="btn" data-act="close">Close</button></div>`);
   UI.dutyCtx={di,room,pos,cur,here};
+}
+function autoFixDuties(){
+  const tried=new Set(); let fixed=0, left=0;
+  for(let it=0;it<80;it++){
+    const inv=PLAN.inv; let job=null;
+    const ds=inv.days.filter(d=>d.date).sort((a,b)=>a.date.localeCompare(b.date)||(a.sess==="N")-(b.sess==="N"));
+    for(const d of ds){ for(const [no,sl] of Object.entries(d.rooms)){ if(!sl.need) continue;
+      const cand=[]; for(let p=0;p<sl.need;p++){ if(sl.t[p]===null||d.clash.has(sl.t[p])||(sl.roomRep&&sl.roomRep[p]!==null&&sl.roomRep[p]!==undefined)) cand.push(p); }
+      if(sl.pairRep&&!cand.length) cand.push(1,0);
+      for(const p of cand){ const k=d.di+"|"+no+"|"+p; if(!tried.has(k)){ job={di:d.di,no,p,k}; break; } }
+      if(job) break; } if(job) break; }
+    if(!job) break;
+    tried.add(job.k);
+    const {sl,cur,rows}=dutyOptions(job.di,job.no,job.p);
+    const ok=rows.filter(r=>(r.st==="free"||(r.st==="swap"&&cur!==null))&&!r.probs.length);
+    const best=ok.find(r=>r.st==="free")||ok.find(r=>r.st==="swap"&&r.same)||ok[0];
+    if(!best) continue;
+    setDutyChange(job.di,job.no,job.p,best.t.name,"auto-fixed");
+    if(best.st==="swap"&&cur!==null) setDutyChange(job.di,best.o.room,best.o.pos,PLAN.inv.teachers[cur].name,"auto-fixed (swap)");
+    recompute(); fixed++;
+    if(sl.pairRep) tried.add(job.di+"|"+job.no+"|"+(1-job.p));
+  }
+  const inv=PLAN.inv; left=inv.repeatRoom+inv.repeatPair+inv.clashes+inv.unfilled;
+  return {fixed,left};
 }
 document.addEventListener("click",e=>{
   const d=e.target.closest("[data-duty]"); if(d){ dutyDialog(d.dataset.duty); return; }
@@ -2116,6 +2193,8 @@ document.addEventListener("click",e=>{
     setDutyChange(c.di,c.room,c.pos,t.name,"changed on chart");
     if(c.here[ti]&&c.cur!==null){ const o=c.here[ti]; setDutyChange(c.di,o.room,o.pos,PLAN.inv.teachers[c.cur].name,"swapped on chart"); }
     closeModal(); recompute(); render(); toast(c.here[ti]?"⇄ Swapped":"✔ Duty changed"); }
+  else if(a==="autoFix"){ pushUndo("auto-fix duties"); const r=autoFixDuties(); render();
+    toast(r.fixed?`⚡ ${r.fixed} duty change${r.fixed>1?"s":""} made${r.left?" — "+r.left+" still to check (not enough free teachers)":" — all fixed ✔"}`:"Nothing could be fixed safely — not enough free teachers"); }
   else if(a==="dutyAuto"&&UI.dutyCtx){ const c=UI.dutyCtx, sit=PLAN.sitKeyOf(c.di), p=c.pos?"INVI 2":"INVI 1"; pushUndo("duty change");
     S.changes=S.changes.filter(x=>!(x.sit===sit&&T(x.room)===c.room&&(T(x.pos)||"INVI 1")===p)); closeModal(); recompute(); render(); toast("↺ Back to automatic"); }
 });
